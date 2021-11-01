@@ -64,7 +64,7 @@ class PACSGeneralBase(Dataset):
 
     def _load(self):
         self._length = len(os.listdir(self.root)) - 1
-        self._data = np.load(self._data_path)
+        self._data = np.load(self._data_path, allow_pickle=True)
         split = self._get_split()
         if split == "train":
             self.split_indices = [0, int(0.7*self._length)]
