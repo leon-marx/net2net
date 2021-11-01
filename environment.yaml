@@ -1,4 +1,4 @@
-name: net2net
+name: leon-net2net
 channels:
   - pytorch
   - defaults
