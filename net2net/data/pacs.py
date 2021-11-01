@@ -72,7 +72,7 @@ class PACSGeneralBase(Dataset):
             self.split_indices = [int(0.7*self._length), int(0.9*self._length)]
         elif split == "test":
             self.split_indices = [int(0.9*self._length), -1]
-        self._labels = {
+        self.labels = {
             "fname": self._data[self.split_indices[0] : self.split_indices[1]]
         }
 
