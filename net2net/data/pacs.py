@@ -63,18 +63,19 @@ class PACSGeneralBase(Dataset):
         return split
 
     def _load(self):
-        self._length = len(os.listdir(self.root)) - 1
+        self.full_length = len(os.listdir(self.root)) - 1
         self._data = np.loadtxt(self._data_path, dtype=str)
         split = self._get_split()
         if split == "train":
-            self.split_indices = [0, int(0.7*self._length)]
+            self.split_indices = [0, int(0.7*self.full_length)]
         elif split == "val":
-            self.split_indices = [int(0.7*self._length), int(0.9*self._length)]
+            self.split_indices = [int(0.7*self.full_length), int(0.9*self.full_length)]
         elif split == "test":
-            self.split_indices = [int(0.9*self._length), -1]
+            self.split_indices = [int(0.9*self.full_length), -1]
         self.labels = {
             "fname": self._data[self.split_indices[0] : self.split_indices[1]]
         }
+        self._length = self.labels["fname"].shape[0]
 
     def _load_example(self, i):
         example = dict()
