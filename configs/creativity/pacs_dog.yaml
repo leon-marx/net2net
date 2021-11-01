@@ -52,8 +52,8 @@ data:
     train:
       target: net2net.data.pacs.PACSTrain
       params:
-        size: 256
+        size: 227
     validation:
       target: net2net.data.pacs.PACSValidation
       params:
-        size: 256
+        size: 227
