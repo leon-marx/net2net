@@ -8,6 +8,13 @@ from torch.utils.data import Dataset, ConcatDataset
 from net2net.data.base import ImagePaths, NumpyPaths, ConcatDatasetWithIndex
 import net2net.data.utils as ndu
 
+if os.name == "nt":
+    print("Running on windows")
+    REPOPATH = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
+else:
+    print("Running on linux")
+    REPOPATH = f"/home/tarkus/leon/bachelor/"
+
 class PACSBase(Dataset):
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -36,13 +43,13 @@ class PACSGeneralBase(Dataset):
         self._load()
 
     def _prepare(self):
-        self.root = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/data/PACS/{self.domain}/{self.content}/"
+        self.root = REPOPATH + f"data/PACS/{self.domain}/{self.content}/"
         namelist = os.listdir(self.root)
-        with open(f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/data/meta/{self.domain}_{self.content}.txt", "w") as f:
+        with open(REPOPATH + f"data/meta/{self.domain}_{self.content}.txt", "w") as f:
             for name in namelist:
                 if name != ".ready":
                     f.write(name + "\n")
-        self._data_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/data/meta/{self.domain}_{self.content}.txt"
+        self._data_path = REPOPATH + f"data/meta/{self.domain}_{self.content}.txt"
         if not ndu.is_prepared(self.root):
             print(f"preparing {self.domain} {self.content} dataset...")
             # prep
