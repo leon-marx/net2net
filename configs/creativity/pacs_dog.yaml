@@ -7,7 +7,7 @@ model:
     flow_config:
       target: net2net.modules.flow.flatflow.ConditionalFlatCouplingFlow
       params:
-        conditioning_dim: 3
+        conditioning_dim: 4
         embedding_dim: 10
         conditioning_depth: 2
         n_flows: 20
