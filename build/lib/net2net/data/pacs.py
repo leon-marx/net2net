@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 from PIL import Image
 from torch.utils.data import Dataset, ConcatDataset
+import torch.nn.functional as F
 
 from net2net.data.base import ImagePaths, NumpyPaths, ConcatDatasetWithIndex
 import net2net.data.utils as ndu
@@ -31,10 +32,8 @@ class PACSBase(Dataset):
 class PACSGeneralBase(Dataset):
     def __init__(self, config=None, domain=None, content=None):
         if os.name == "nt":
-            print("Running on windows")
             self.repo_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
         else:
-            print("Running on linux")
             self.repo_path = f"/home/tarkus/leon/bachelor/"
         self.domain = domain
         self.content = content
@@ -162,7 +161,7 @@ class PACSTrain(Dataset):
 
     def __getitem__(self, i):
         example, y = self.data[i]
-        example["class"] = y
+        example["class"] = F.one_hot(y, num_classes=4)
         return example
 
 class PACSValidation(Dataset):
@@ -182,7 +181,7 @@ class PACSValidation(Dataset):
 
     def __getitem__(self, i):
         example, y = self.data[i]
-        example["class"] = y
+        example["class"] = F.one_hot(y, num_classes=4)
         return example
 
 if __name__ == "__main__":

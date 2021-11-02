@@ -32,10 +32,8 @@ class PACSBase(Dataset):
 class PACSGeneralBase(Dataset):
     def __init__(self, config=None, domain=None, content=None):
         if os.name == "nt":
-            print("Running on windows")
             self.repo_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
         else:
-            print("Running on linux")
             self.repo_path = f"/home/tarkus/leon/bachelor/"
         self.domain = domain
         self.content = content
