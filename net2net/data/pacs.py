@@ -3,6 +3,7 @@ import albumentations
 import numpy as np
 from pathlib import Path
 from PIL import Image
+import torch
 from torch.utils.data import Dataset, ConcatDataset
 import torch.nn.functional as F
 
@@ -161,7 +162,7 @@ class PACSTrain(Dataset):
 
     def __getitem__(self, i):
         example, y = self.data[i]
-        example["class"] = F.one_hot(y, num_classes=4)
+        example["class"] = F.one_hot(torch.Tensor([y]), num_classes=4)
         return example
 
 class PACSValidation(Dataset):
@@ -181,7 +182,7 @@ class PACSValidation(Dataset):
 
     def __getitem__(self, i):
         example, y = self.data[i]
-        example["class"] = F.one_hot(y, num_classes=4)
+        example["class"] = F.one_hot(torch.Tensor([y]), num_classes=4)
         return example
 
 if __name__ == "__main__":
