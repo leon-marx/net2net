@@ -155,7 +155,7 @@ class Net2NetFlow(pl.LightningModule):
             log["conditioning"] = xc
         else:
             _,_,h,w = x.shape
-            log["conditioning"] = log_txt_as_img((w,h), xc)
+            log["conditioning"] = log_txt_as_img((w,h), c)
 
         log["reconstructions"] = xrec
         log["shift"] = xshift
