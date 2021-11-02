@@ -222,7 +222,11 @@ class ImageLogger(Callback):
     @rank_zero_only
     def _testtube(self, pl_module, images, batch_idx, split):
         for k in images:
-            grid = torchvision.utils.make_grid(images[k])
+            if k != "conditioning":
+                grid = torchvision.utils.make_grid(images[k])
+            else:
+                grid = torch.zeros((3, 231, 918))
+            # grid = torchvision.utils.make_grid(images[k])
             grid = (grid+1.0)/2.0 # -1,1 -> 0,1; c,h,w
 
             tag = f"{split}/{k}"
