@@ -26,8 +26,5 @@ class Labelator(nn.Module):
         return torch.LongTensor(others)
 
     def make_one_hot(self, label):
-        print("num classes: ", self.num_classes)
         one_hot = F.one_hot(label, num_classes=self.num_classes)
-        print("onehot shape:", one_hot.shape)
-        print("onehot:", one_hot)
         return one_hot
