@@ -235,7 +235,10 @@ class ImageLogger(Callback):
                   global_step, current_epoch, batch_idx):
         root = os.path.join(save_dir, "images", split)
         for k in images:
-            grid = torchvision.utils.make_grid(images[k], nrow=4)
+            if k != "conditioning":
+                grid = torchvision.utils.make_grid(images[k], nrow=4)
+            else:
+                grid = torch.zeros((3, 231, 918))
 
             grid = (grid+1.0)/2.0 # -1,1 -> 0,1; c,h,w
             grid = grid.transpose(0,1).transpose(1,2).squeeze(-1)
