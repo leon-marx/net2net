@@ -162,7 +162,8 @@ class PACSTrain(Dataset):
 
     def __getitem__(self, i):
         example, y = self.data[i]
-        example["class"] = F.one_hot(torch.Tensor([y]), num_classes=4)
+        example["class"] = torch.zeros(4)
+        example["class"][y] = 1
         return example
 
 class PACSValidation(Dataset):
@@ -182,7 +183,8 @@ class PACSValidation(Dataset):
 
     def __getitem__(self, i):
         example, y = self.data[i]
-        example["class"] = F.one_hot(torch.Tensor([y]), num_classes=4)
+        example["class"] = torch.zeros(4)
+        example["class"][y] = 1
         return example
 
 if __name__ == "__main__":
