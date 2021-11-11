@@ -4,6 +4,7 @@ model:
   params:
     first_stage_key: "image"
     cond_stage_key: "class"
+    ckpt_path: "logs/2021-11-10T22-02-01_200_epochs/checkpoints/last.ckpt"
     flow_config:
       target: net2net.modules.flow.flatflow.ConditionalFlatCouplingFlow
       params:
@@ -26,7 +27,6 @@ model:
     first_stage_config:
       target: net2net.models.autoencoder.BigAE
       params:
-        ckpt_path: "logs/2021-11-10T22-02-01_200_epochs/checkpoints/epoch=000146.ckpt"
         encoder_config:
           target: net2net.modules.autoencoder.encoder.ResnetEncoder
           params:
