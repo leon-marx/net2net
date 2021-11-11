@@ -30,7 +30,7 @@ model:
           target: net2net.modules.autoencoder.encoder.ResnetEncoder
           params:
             in_channels: 3
-            in_size: 227
+            in_size: 256
             pretrained: false
             type: resnet101
             z_dim: 128
@@ -52,8 +52,8 @@ data:
     train:
       target: net2net.data.pacs.PACSTrain
       params:
-        size: 227
+        size: 256
     validation:
       target: net2net.data.pacs.PACSValidation
       params:
-        size: 227
+        size: 256
