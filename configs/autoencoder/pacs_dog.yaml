@@ -1,5 +1,5 @@
 model:
-  base_learning_rate: 4.5e-5
+  base_learning_rate: 4.5e-7
   target: net2net.models.autoencoder.BigAE
   params:
     ckpt_path: logs/2021-11-11T20-42-57_pacs_dog/checkpoints/last.ckpt
