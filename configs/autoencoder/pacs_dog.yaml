@@ -1,8 +1,7 @@
 model:
-  base_learning_rate: 4.5e-7
+  base_learning_rate: 4.5e-6
   target: net2net.models.autoencoder.BigAE
   params:
-    ckpt_path: logs/2021-11-11T20-42-57_pacs_dog/checkpoints/epoch=000073.ckpt
     loss_config:
       target: net2net.modules.autoencoder.loss.LPIPSWithDiscriminator
       params:
@@ -17,12 +16,12 @@ model:
         in_size: 256
         pretrained: false
         type: resnet101
-        z_dim: 128
+        z_dim: 256
 
     decoder_config:
       target: net2net.modules.autoencoder.decoder.BigGANDecoderWrapper
       params:
-        z_dim: 128
+        z_dim: 256
         in_size: 256
         use_actnorm_in_dec: true
 
