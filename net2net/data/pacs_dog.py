@@ -30,37 +30,30 @@ class PACSBase(Dataset):
         return ex
 
 class PACSGeneralBase(Dataset):
-    def __init__(self, config=None, domain=None, contents=None):
+    def __init__(self, config=None, domain=None, content=None):
         if os.name == "nt":
             self.repo_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
         else:
             self.repo_path = f"/home/tarkus/leon/bachelor/"
         self.domain = domain
-        self.contents = contents
+        self.content = content
         self.config = config or dict()
         self._prepare()
         self._load()
 
     def _prepare(self):
-        self.root = self.repo_path + f"data/PACS/{self.domain}/"
-        for i, content in enumerate(self.contents):
-            namelist = os.listdir(self.root + f"{content}/")
-            if i == 0:
-                with open(self.repo_path + f"data/meta/{self.domain}.txt", "w") as f:
-                    for name in namelist:
-                        if name != ".ready":
-                            f.write(f"{content}/" + name + "\n")
-            else:
-                with open(self.repo_path + f"data/meta/{self.domain}.txt", "a") as f:
-                    for name in namelist:
-                        if name != ".ready":
-                            f.write(f"{content}/" + name + "\n")
-            if not ndu.is_prepared(self.root + f"{content}/"):
-                print(f"preparing {self.domain} {content} dataset...")
-                # prep
-                root = Path(self.root + f"{content}/")
-                ndu.mark_prepared(self.root + f"{content}/")
-        self._data_path = self.repo_path + f"data/meta/{self.domain}.txt"
+        self.root = self.repo_path + f"data/PACS/{self.domain}/{self.content}/"
+        namelist = os.listdir(self.root)
+        with open(self.repo_path + f"data/meta/{self.domain}_{self.content}.txt", "w") as f:
+            for name in namelist:
+                if name != ".ready":
+                    f.write(name + "\n")
+        self._data_path = self.repo_path + f"data/meta/{self.domain}_{self.content}.txt"
+        if not ndu.is_prepared(self.root):
+            print(f"preparing {self.domain} {self.content} dataset...")
+            # prep
+            root = Path(self.root)
+            ndu.mark_prepared(self.root)
 
     def _get_split(self):
         split = (
@@ -69,9 +62,7 @@ class PACSGeneralBase(Dataset):
         return split
 
     def _load(self):
-        self.full_length = 0
-        for content in self.contents:
-            self.full_length += len(os.listdir(self.root + f"{content}/")) - 1
+        self.full_length = len(os.listdir(self.root)) - 1
         self._data = np.loadtxt(self._data_path, dtype=str)
         split = self._get_split()
         if split == "train":
@@ -84,9 +75,6 @@ class PACSGeneralBase(Dataset):
             "fname": self._data[self.split_indices[0] : self.split_indices[1]]
         }
         self._length = self.labels["fname"].shape[0]
-        print(split)
-        print(self.full_length)
-        print(self.split_indices)
 
     def _load_example(self, i):
         example = dict()
@@ -112,8 +100,8 @@ class PACSGeneralBase(Dataset):
 
 class PACSGeneral(PACSGeneralBase):
     """General PACS dataset with support for resizing and fixed cropping"""
-    def __init__(self, config, domain, contents):
-        super().__init__(config, domain, contents)
+    def __init__(self, config, domain, content):
+        super().__init__(config, domain, content)
         self.size = config["spatial_size"]
         self.cropper = albumentations.CenterCrop(height=160,width=160)
         self.rescaler = albumentations.SmallestMaxSize(max_size=self.size)
@@ -145,28 +133,27 @@ class _PACSGeneralTest(PACSGeneral):
         return "test"
 
 class PACSGeneralTrain(PACSBase):
-    def __init__(self, size, keys=None, domain=None, contents=None):
+    def __init__(self, size, keys=None, domain=None, content=None):
         super().__init__()
         cfg = {"spatial_size": size}
-        self.data = _PACSGeneralTrain(cfg, domain=domain, contents=contents)
+        self.data = _PACSGeneralTrain(cfg, domain=domain, content=content)
 
 class PACSGeneralValidation(PACSBase):
-    def __init__(self, size, keys=None, domain=None, contents=None):
+    def __init__(self, size, keys=None, domain=None, content=None):
         super().__init__()
         cfg = {"spatial_size": size}
-        self.data = _PACSGeneralTest(cfg, domain=domain, contents=contents)
+        self.data = _PACSGeneralTest(cfg, domain=domain, content=content)
 
 class PACSTrain(Dataset):
     """
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
-    def __init__(self, size=256):
-        contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSGeneralTrain(size=size, keys=["image"], domain="photo", contents=contents)
-        d2 = PACSGeneralTrain(size=size, keys=["image"], domain="art_painting", contents=contents)
-        d3 = PACSGeneralTrain(size=size, keys=["image"], domain="cartoon", contents=contents)
-        d4 = PACSGeneralTrain(size=size, keys=["image"], domain="sketch", contents=contents)
+    def __init__(self, size=227):
+        d1 = PACSGeneralTrain(size=size, keys=["image"], domain="photo", content="dog")
+        d2 = PACSGeneralTrain(size=size, keys=["image"], domain="art_painting", content="dog")
+        d3 = PACSGeneralTrain(size=size, keys=["image"], domain="cartoon", content="dog")
+        d4 = PACSGeneralTrain(size=size, keys=["image"], domain="sketch", content="dog")
         self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
 
     def __len__(self):
@@ -182,12 +169,11 @@ class PACSValidation(Dataset):
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
-    def __init__(self, size=256):
-        contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSGeneralValidation(size=size, keys=["image"], domain="photo", contents=contents)
-        d2 = PACSGeneralValidation(size=size, keys=["image"], domain="art_painting", contents=contents)
-        d3 = PACSGeneralValidation(size=size, keys=["image"], domain="cartoon", contents=contents)
-        d4 = PACSGeneralValidation(size=size, keys=["image"], domain="sketch", contents=contents)
+    def __init__(self, size=227):
+        d1 = PACSGeneralValidation(size=size, keys=["image"], domain="photo", content="dog")
+        d2 = PACSGeneralValidation(size=size, keys=["image"], domain="art_painting", content="dog")
+        d3 = PACSGeneralValidation(size=size, keys=["image"], domain="cartoon", content="dog")
+        d4 = PACSGeneralValidation(size=size, keys=["image"], domain="sketch", content="dog")
         self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
 
     def __len__(self):
@@ -200,9 +186,9 @@ class PACSValidation(Dataset):
 
 if __name__ == "__main__":
 
-    d = PACSTrain(size=256)
+    d = PACSTrain(size=227)
     print("size PACSTrain:", len(d))
-    d = PACSValidation(size=256)
+    d = PACSValidation(size=227)
     print("size PACSValidation:", len(d))
     x = d[0]["image"]
     print(x.shape)
