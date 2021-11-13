@@ -26,6 +26,7 @@ model:
     first_stage_config:
       target: net2net.models.autoencoder.BigAE
       params:
+        ckpt_path: "logs/2020-09-16T16-23-39_INSERT_NAME_HERE/checkpoints/last.ckpt"
         encoder_config:
           target: net2net.modules.autoencoder.encoder.ResnetEncoder
           params:
@@ -48,7 +49,7 @@ model:
 data:
   target: translation.DataModuleFromConfig
   params:
-    batch_size: 4
+    batch_size: 15
     train:
       target: net2net.data.pacs.PACSTrain
       params:
