@@ -16,12 +16,12 @@ model:
         in_size: 256
         pretrained: false
         type: resnet101
-        z_dim: 256
+        z_dim: 128
 
     decoder_config:
       target: net2net.modules.autoencoder.decoder.BigGANDecoderWrapper
       params:
-        z_dim: 256
+        z_dim: 128
         in_size: 256
         use_actnorm_in_dec: true
 

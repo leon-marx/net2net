@@ -10,6 +10,23 @@ from net2net.data.base import ImagePaths, NumpyPaths, ConcatDatasetWithIndex
 import net2net.data.utils as ndu
 
 
+def pacs_contents_one_hot(array):
+    names = np.unique(array)
+    swap = {
+        "dog": np.array([1, 0, 0, 0, 0, 0, 0]),
+        "elephant": np.array([0, 1, 0, 0, 0, 0, 0]),
+        "giraffe": np.array([0, 0, 1, 0, 0, 0, 0]),
+        "guitar": np.array([0, 0, 0, 1, 0, 0, 0]),
+        "horse": np.array([0, 0, 0, 0, 1, 0, 0]),
+        "house": np.array([0, 0, 0, 0, 0, 1, 0]),
+        "person": np.array([0, 0, 0, 0, 0, 0, 1]),
+    }
+    new = np.zeros((len(array), 7))
+    for i, a in enumerate(array):
+        new[i] = swap[a]
+    return new
+
+
 class PACSBase(Dataset):
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -75,18 +92,27 @@ class PACSGeneralBase(Dataset):
         self._data = np.loadtxt(self._data_path, dtype=str)
         split = self._get_split()
         if split == "train":
-            self.split_indices = [0, int(0.7*self.full_length)]
+            self.split_indices = [0, int(0.9*self.full_length)]  # changed 0.7 to 0.9 because "val" is not supported atm
         elif split == "val":
             self.split_indices = [int(0.7*self.full_length), int(0.9*self.full_length)]
         elif split == "test":
             self.split_indices = [int(0.9*self.full_length), -1]
         self.labels = {
-            "fname": self._data[self.split_indices[0] : self.split_indices[1]]
+            "fname": self._data[self.split_indices[0] : self.split_indices[1]],
+            "domain": np.array([str(self.domain)] * self._data[self.split_indices[0] : self.split_indices[1]].shape[0]),
+            "content": pacs_contents_one_hot(np.vectorize(lambda s: s.split("/")[0])(self._data[self.split_indices[0] : self.split_indices[1]]))
         }
         self._length = self.labels["fname"].shape[0]
-        print(split)
-        print(self.full_length)
-        print(self.split_indices)
+        if True:
+            print("")
+            print("Domain:", self.domain)
+            print("split:", split)
+            print("full length:", self.full_length)
+            print("split indices:", self.split_indices)
+            print("shape of fname:", self.labels["fname"].shape)
+            print("unique domains:", np.unique(self.labels["domain"]))
+            print("unique contents:", np.unique(self.labels["content"], axis=0))
+            print("")
 
     def _load_example(self, i):
         example = dict()
@@ -200,11 +226,14 @@ class PACSValidation(Dataset):
 
 if __name__ == "__main__":
 
-    d = PACSTrain(size=256)
-    print("size PACSTrain:", len(d))
-    d = PACSValidation(size=256)
-    print("size PACSValidation:", len(d))
-    x = d[0]["image"]
-    print(x.shape)
-    print(type(x))
-    print(x.max(), x.min())
+    dt = PACSTrain(size=256)
+    print("size PACSTrain:", len(dt))
+    dv = PACSValidation(size=256)
+    print("size PACSValidation:", len(dv))
+    x = dt[0]["image"]
+    print("image shape:", x.shape)
+    print("dtype of image:", type(x))
+    print("max and min in image:", x.max(), x.min())
+    print("Data entries:")
+    for k in dt[0]:
+        print("    ", k, " : ", dt[0][k])
