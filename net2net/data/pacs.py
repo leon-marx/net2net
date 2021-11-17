@@ -1,118 +1,71 @@
-import os, pickle
-import albumentations
+import albumentations as A
+import cv2
+import matplotlib.pyplot as plt
 import numpy as np
-from pathlib import Path
+import os
 from PIL import Image
-import torch
-from torch.utils.data import Dataset, ConcatDataset
+from torch.utils.data import Dataset
 
-from net2net.data.base import ImagePaths, NumpyPaths, ConcatDatasetWithIndex
+from net2net.data.base import ConcatDatasetWithIndex
 import net2net.data.utils as ndu
 
 
-def pacs_contents_one_hot(array):
-    names = np.unique(array)
-    swap = {
-        "dog": np.array([1, 0, 0, 0, 0, 0, 0]),
-        "elephant": np.array([0, 1, 0, 0, 0, 0, 0]),
-        "giraffe": np.array([0, 0, 1, 0, 0, 0, 0]),
-        "guitar": np.array([0, 0, 0, 1, 0, 0, 0]),
-        "horse": np.array([0, 0, 0, 0, 1, 0, 0]),
-        "house": np.array([0, 0, 0, 0, 0, 1, 0]),
-        "person": np.array([0, 0, 0, 0, 0, 0, 1]),
-    }
-    new = np.zeros((len(array), 7))
-    for i, a in enumerate(array):
-        new[i] = swap[a]
-    return new
-
-
-class PACSBase(Dataset):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
-        self.data = None
-        self.keys = None
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, i):
-        example = self.data[i]
-        ex = {}
-        if self.keys is not None:
-            for k in self.keys:
-                ex[k] = example[k]
-        else:
-            ex = example
-        return ex
-
-class PACSGeneralBase(Dataset):
-    def __init__(self, config=None, domain=None, contents=None):
+class PACSDataset(Dataset):
+    def __init__(self, domain, contents, train, augment):
+        super(PACSDataset, self).__init__()
         if os.name == "nt":
             self.repo_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
         else:
             self.repo_path = f"/home/tarkus/leon/bachelor/"
         self.domain = domain
         self.contents = contents
-        self.config = config or dict()
+        self.train = train
+        self.augment = augment
+        self.pacs_dir = "PACS_train" if self.train else "PACS_test"
         self._prepare()
         self._load()
 
     def _prepare(self):
-        self.root = self.repo_path + f"data/PACS/{self.domain}/"
-        for i, content in enumerate(self.contents):
-            namelist = os.listdir(self.root + f"{content}/")
-            if i == 0:
-                with open(self.repo_path + f"data/meta/{self.domain}.txt", "w") as f:
-                    for name in namelist:
-                        if name != ".ready":
-                            f.write(f"{content}/" + name + "\n")
-            else:
-                with open(self.repo_path + f"data/meta/{self.domain}.txt", "a") as f:
-                    for name in namelist:
-                        if name != ".ready":
-                            f.write(f"{content}/" + name + "\n")
+        self.root = self.repo_path + f"data/{self.pacs_dir}/{self.domain}/"
+        for content in self.contents:
             if not ndu.is_prepared(self.root + f"{content}/"):
                 print(f"preparing {self.domain} {content} dataset...")
                 # prep
-                root = Path(self.root + f"{content}/")
                 ndu.mark_prepared(self.root + f"{content}/")
-        self._data_path = self.repo_path + f"data/meta/{self.domain}.txt"
-
-    def _get_split(self):
-        split = (
-            "test" if self.config.get("test_mode", False) else "train"
-        )  # default split
-        return split
+        self._data_path = self.repo_path + f"data/{self.pacs_dir}/meta/{self.domain}.txt"
 
     def _load(self):
-        self.full_length = 0
-        for content in self.contents:
-            self.full_length += len(os.listdir(self.root + f"{content}/")) - 1
         self._data = np.loadtxt(self._data_path, dtype=str)
-        split = self._get_split()
-        if split == "train":
-            self.split_indices = [0, int(0.9*self.full_length)]  # changed 0.7 to 0.9 because "val" is not supported atm
-        elif split == "val":
-            self.split_indices = [int(0.7*self.full_length), int(0.9*self.full_length)]
-        elif split == "test":
-            self.split_indices = [int(0.9*self.full_length), -1]
         self.labels = {
-            "fname": self._data[self.split_indices[0] : self.split_indices[1]],
-            "domain": np.array([str(self.domain)] * self._data[self.split_indices[0] : self.split_indices[1]].shape[0]),
-            "content": pacs_contents_one_hot(np.vectorize(lambda s: s.split("/")[0])(self._data[self.split_indices[0] : self.split_indices[1]]))
+            "fname": self._data,
+            "domain": np.array([str(self.domain)] * self._data.shape[0]),
+            "content":self._contents_one_hot(np.vectorize(lambda s: s.split("/")[0])(self._data))
         }
         self._length = self.labels["fname"].shape[0]
         if True:
             print("")
             print("Domain:", self.domain)
-            print("split:", split)
-            print("full length:", self.full_length)
-            print("split indices:", self.split_indices)
             print("shape of fname:", self.labels["fname"].shape)
             print("unique domains:", np.unique(self.labels["domain"]))
             print("unique contents:", np.unique(self.labels["content"], axis=0))
             print("")
+
+    def _contents_one_hot(self, array):
+        swap = {}
+        for i, content in enumerate(self.contents):
+            swap[content] = np.zeros(len(self.contents))
+            swap[content][i] = 1
+        new = np.zeros((len(array), len(self.contents)))
+        for i, a in enumerate(array):
+            new[i] = swap[a]
+        return new
+
+    def __getitem__(self, i):
+        example = self._load_example(i)
+        self._augment_example(example, augment=self.augment)
+        self._preprocess_example(example)
+        example["index"] = i
+        return example
 
     def _load_example(self, i):
         example = dict()
@@ -124,75 +77,60 @@ class PACSGeneralBase(Dataset):
         example["image"] = np.array(example["image"])
         return example
 
+    def _augment_example(self, example, augment):
+        # Numbers mean, how good of an idea I think this is. 1 = very good, 5 = maybe catastrophal
+        if augment:
+            transform = A.Compose([
+                A.Resize(height=256, width=256, interpolation=cv2.INTER_LINEAR, p=1), # 1
+                A.RandomResizedCrop(height=256, width=256, scale=(0.5, 1), ratio=(0.75, 1.3333333333333333), interpolation=cv2.INTER_LINEAR, p=0.8), # 1
+                A.HorizontalFlip(p=0.5), # 1
+                A.Rotate(limit=45, interpolation=cv2.INTER_LINEAR, border_mode=cv2.BORDER_CONSTANT, value=1, p=0.5), # 1
+                A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5), # 1
+                A.OneOf([
+                    A.Blur(blur_limit=(3, 7), p=0.5), # 2
+                    A.GaussianBlur(blur_limit=(3, 7), sigma_limit=0, p=0.5), # 2
+                    A.GlassBlur(sigma=0.7, max_delta=4, iterations=2, mode="fast", p=0.5), # 3
+                    A.GaussNoise(var_limit=(10.0, 50.0), mean=0, per_channel=True, p=0.5), # 2
+                    A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=0.5), # 2
+                ]),
+                A.OneOf([
+                    A.ChannelDropout(channel_drop_range=(1, 1), fill_value=0, p=0.1), # 4
+                    A.ChannelShuffle(p=0.1), # 4
+                    A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3), # 2
+                    A.Emboss(alpha=(0.2, 0.5), strength=(0.2, 0.7), p=0.2), # 3
+                    A.Equalize(mode="cv", by_channels=True, p=0.2), # 3
+                    A.FancyPCA(alpha=0.1, p=0.3), # 2
+                    A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=0.3), # 3
+                ]),
+            ])
+        else:
+            transform = A.Compose([
+                A.Resize(height=256, width=256, interpolation=cv2.INTER_LINEAR, p=1)
+            ])
+        transformed = transform(image=example["image"])
+        example["image"] = transformed["image"]
+
     def _preprocess_example(self, example):
+        example["image"] = (example["image"] + np.random.random()) / 256.  # dequantization
+        example["image"] = (255 * example["image"])
         example["image"] = example["image"] / 127.5 - 1.0
         example["image"] = example["image"].astype(np.float32)
-
-    def __getitem__(self, i):
-        example = self._load_example(i)
-        self._preprocess_example(example)
-        return example
 
     def __len__(self):
         return self._length
 
-class PACSGeneral(PACSGeneralBase):
-    """General PACS dataset with support for resizing and fixed cropping"""
-    def __init__(self, config, domain, contents):
-        super().__init__(config, domain, contents)
-        self.size = config["spatial_size"]
-        self.cropper = albumentations.CenterCrop(height=160,width=160)
-        self.rescaler = albumentations.SmallestMaxSize(max_size=self.size)
-        self.preprocessor = albumentations.Compose([self.cropper, self.rescaler])
-
-        if "cropsize" in config and config["cropsize"] < self.size:
-            self.cropsize = config["cropsize"]
-            self.preprocessor = albumentations.Compose([
-                self.preprocessor,
-                albumentations.RandomCrop(height=self.cropsize, width=self.cropsize)])
-
-    def _preprocess_example(self, example):
-        example["image"] = self.preprocessor(image=example["image"])["image"]
-        example["image"] = (example["image"] + np.random.random()) / 256.  # dequantization
-        example["image"] = (255 * example["image"])
-        return super()._preprocess_example(example)
-
-    def __getitem__(self, i):
-        example = super().__getitem__(i)
-        example['index'] = i
-        return example
-
-class _PACSGeneralTrain(PACSGeneral):
-    def _get_split(self):
-        return "train"
-
-class _PACSGeneralTest(PACSGeneral):
-    def _get_split(self):
-        return "test"
-
-class PACSGeneralTrain(PACSBase):
-    def __init__(self, size, keys=None, domain=None, contents=None):
-        super().__init__()
-        cfg = {"spatial_size": size}
-        self.data = _PACSGeneralTrain(cfg, domain=domain, contents=contents)
-
-class PACSGeneralValidation(PACSBase):
-    def __init__(self, size, keys=None, domain=None, contents=None):
-        super().__init__()
-        cfg = {"spatial_size": size}
-        self.data = _PACSGeneralTest(cfg, domain=domain, contents=contents)
 
 class PACSTrain(Dataset):
     """
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
-    def __init__(self, size=256):
+    def __init__(self):
         contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSGeneralTrain(size=size, keys=["image"], domain="photo", contents=contents)
-        d2 = PACSGeneralTrain(size=size, keys=["image"], domain="art_painting", contents=contents)
-        d3 = PACSGeneralTrain(size=size, keys=["image"], domain="cartoon", contents=contents)
-        d4 = PACSGeneralTrain(size=size, keys=["image"], domain="sketch", contents=contents)
+        d1 = PACSDataset(domain="photo", contents=contents, train=True, augment=True)
+        d2 = PACSDataset(domain="art_painting", contents=contents, train=True, augment=True)
+        d3 = PACSDataset(domain="cartoon", contents=contents, train=True, augment=True)
+        d4 = PACSDataset(domain="sketch", contents=contents, train=True, augment=True)
         self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
 
     def __len__(self):
@@ -202,18 +140,19 @@ class PACSTrain(Dataset):
         example, y = self.data[i]
         example["class"] = y
         return example
+
 
 class PACSValidation(Dataset):
     """
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
-    def __init__(self, size=256):
+    def __init__(self):
         contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSGeneralValidation(size=size, keys=["image"], domain="photo", contents=contents)
-        d2 = PACSGeneralValidation(size=size, keys=["image"], domain="art_painting", contents=contents)
-        d3 = PACSGeneralValidation(size=size, keys=["image"], domain="cartoon", contents=contents)
-        d4 = PACSGeneralValidation(size=size, keys=["image"], domain="sketch", contents=contents)
+        d1 = PACSDataset(domain="photo", contents=contents, train=False, augment=False)
+        d2 = PACSDataset(domain="art_painting", contents=contents, train=False, augment=False)
+        d3 = PACSDataset(domain="cartoon", contents=contents, train=False, augment=False)
+        d4 = PACSDataset(domain="sketch", contents=contents, train=False, augment=False)
         self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
 
     def __len__(self):
@@ -224,16 +163,44 @@ class PACSValidation(Dataset):
         example["class"] = y
         return example
 
+
 if __name__ == "__main__":
 
-    dt = PACSTrain(size=256)
+    dt = PACSTrain()
     print("size PACSTrain:", len(dt))
-    dv = PACSValidation(size=256)
+    dv = PACSValidation()
     print("size PACSValidation:", len(dv))
     x = dt[0]["image"]
     print("image shape:", x.shape)
     print("dtype of image:", type(x))
     print("max and min in image:", x.max(), x.min())
     print("Data entries:")
+    """
+    train_domains = []
+    for d in dt:
+        train_domains.append(d["domain"])
+    print(np.unique(train_domains, return_counts=True))
+    test_domains = []
+    for d in dv:
+        test_domains.append(d["domain"])
+    print(np.unique(test_domains, return_counts=True))
+    """
     for k in dt[0]:
         print("    ", k, " : ", dt[0][k])
+    while True:
+        plt.figure(figsize=(12, 6))
+        i = np.random.randint(0, len(dt))
+        plt.subplot(1, 2, 1)
+        plt.imshow(dt[i]["image"])
+        plt.title(dt[i]["fname"])
+        plt.xticks([])
+        plt.yticks([])
+        plt.xlabel("Train Instance")
+        j = np.random.randint(0, len(dv))
+        plt.subplot(1, 2, 2)
+        plt.imshow(dv[j]["image"])
+        plt.title(dv[j]["fname"])
+        plt.xticks([])
+        plt.yticks([])
+        plt.xlabel("Test Instance")
+        plt.show()
