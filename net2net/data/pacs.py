@@ -42,7 +42,7 @@ class PACSDataset(Dataset):
             "content":self._contents_one_hot(np.vectorize(lambda s: s.split("/")[0])(self._data))
         }
         self._length = self.labels["fname"].shape[0]
-        if True:
+        if False:
             print("")
             print("Domain:", self.domain)
             print("shape of fname:", self.labels["fname"].shape)
