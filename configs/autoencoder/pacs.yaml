@@ -32,9 +32,5 @@ data:
     batch_size: 3
     train:
       target: net2net.data.pacs.PACSTrain
-      params:
-        size: 256
     validation:
       target: net2net.data.pacs.PACSValidation
-      params:
-        size: 256

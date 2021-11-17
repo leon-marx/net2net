@@ -11,13 +11,12 @@ import net2net.data.utils as ndu
 
 
 class PACSDataset(Dataset):
-    def __init__(self, size=256, domain=None, contents=None, train=None, augment=None):
+    def __init__(self, domain, contents, train, augment):
         super(PACSDataset, self).__init__()
         if os.name == "nt":
             self.repo_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
         else:
             self.repo_path = f"/home/tarkus/leon/bachelor/"
-        self.size=size
         self.domain = domain
         self.contents = contents
         self.train = train
@@ -126,12 +125,12 @@ class PACSTrain(Dataset):
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
-    def __init__(self, size=256):
+    def __init__(self):
         contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSDataset(size=size, domain="photo", contents=contents, train=True, augment=True)
-        d2 = PACSDataset(size=size, domain="art_painting", contents=contents, train=True, augment=True)
-        d3 = PACSDataset(size=size, domain="cartoon", contents=contents, train=True, augment=True)
-        d4 = PACSDataset(size=size, domain="sketch", contents=contents, train=True, augment=True)
+        d1 = PACSDataset(domain="photo", contents=contents, train=True, augment=True)
+        d2 = PACSDataset(domain="art_painting", contents=contents, train=True, augment=True)
+        d3 = PACSDataset(domain="cartoon", contents=contents, train=True, augment=True)
+        d4 = PACSDataset(domain="sketch", contents=contents, train=True, augment=True)
         self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
 
     def __len__(self):
@@ -143,17 +142,17 @@ class PACSTrain(Dataset):
         return example
 
 
-class PACSValidation(Dataset, size=256):
+class PACSValidation(Dataset):
     """
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
     def __init__(self):
         contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSDataset(size=size, domain="photo", contents=contents, train=False, augment=False)
-        d2 = PACSDataset(size=size, domain="art_painting", contents=contents, train=False, augment=False)
-        d3 = PACSDataset(size=size, domain="cartoon", contents=contents, train=False, augment=False)
-        d4 = PACSDataset(size=size, domain="sketch", contents=contents, train=False, augment=False)
+        d1 = PACSDataset(domain="photo", contents=contents, train=False, augment=False)
+        d2 = PACSDataset(domain="art_painting", contents=contents, train=False, augment=False)
+        d3 = PACSDataset(domain="cartoon", contents=contents, train=False, augment=False)
+        d4 = PACSDataset(domain="sketch", contents=contents, train=False, augment=False)
         self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
 
     def __len__(self):
