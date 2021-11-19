@@ -8,7 +8,7 @@ from net2net.modules.autoencoder.basic import ActNorm, DenseEncoderLayer
 
 class ResnetEncoder(nn.Module):
     def __init__(self, z_dim, in_size, in_channels=3,
-                 pretrained=True, type="resnet101",
+                 pretrained=False, type="resnet50",
                  double_z=True, pre_process=True,
                  ):
         super().__init__()
