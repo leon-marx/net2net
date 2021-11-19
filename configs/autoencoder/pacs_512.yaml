@@ -2,6 +2,7 @@ model:
   base_learning_rate: 4.5e-6
   target: net2net.models.autoencoder.BigAE
   params:
+  ckpt_path: "logs/2021-11-19T10-32-38_augmented_z_512/checkpoints/epoch=000015.ckpt"
     loss_config:
       target: net2net.modules.autoencoder.loss.LPIPSWithDiscriminator
       params:
@@ -14,7 +15,7 @@ model:
       params:
         in_channels: 3
         in_size: 256
-        pretrained: true
+        pretrained: false
         type: resnet101
         z_dim: 512
 
