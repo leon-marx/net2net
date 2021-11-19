@@ -84,24 +84,13 @@ class PACSDataset(Dataset):
                 A.Resize(height=256, width=256, interpolation=cv2.INTER_LINEAR, p=1), # 1
                 A.RandomResizedCrop(height=256, width=256, scale=(0.5, 1), ratio=(0.75, 1.3333333333333333), interpolation=cv2.INTER_LINEAR, p=0.8), # 1
                 A.HorizontalFlip(p=0.5), # 1
-                A.Rotate(limit=45, interpolation=cv2.INTER_LINEAR, border_mode=cv2.BORDER_CONSTANT, value=1, p=0.5), # 1
+                A.Rotate(limit=45, interpolation=cv2.INTER_LINEAR, border_mode=cv2.BORDER_REPLICATE, p=0.5), # 1
                 A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5), # 1
-                A.OneOf([
-                    A.Blur(blur_limit=(3, 7), p=0.5), # 2
-                    A.GaussianBlur(blur_limit=(3, 7), sigma_limit=0, p=0.5), # 2
-                    A.GlassBlur(sigma=0.7, max_delta=4, iterations=2, mode="fast", p=0.5), # 3
-                    A.GaussNoise(var_limit=(10.0, 50.0), mean=0, per_channel=True, p=0.5), # 2
-                    A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=0.5), # 2
-                ]),
-                A.OneOf([
-                    A.ChannelDropout(channel_drop_range=(1, 1), fill_value=0, p=0.1), # 4
-                    A.ChannelShuffle(p=0.1), # 4
-                    A.RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.3), # 2
-                    A.Emboss(alpha=(0.2, 0.5), strength=(0.2, 0.7), p=0.2), # 3
-                    A.Equalize(mode="cv", by_channels=True, p=0.2), # 3
-                    A.FancyPCA(alpha=0.1, p=0.3), # 2
-                    A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=0.3), # 3
-                ]),
+                A.Blur(blur_limit=(3, 4), p=0.3), # 2
+                A.RGBShift(r_shift_limit=20, g_shift_limit=20, b_shift_limit=20, p=0.2), # 2
+                A.Emboss(alpha=(0.2, 0.5), strength=(0.2, 0.7), p=0.2), # 3
+                A.FancyPCA(alpha=0.1, p=0.2), # 2
+                A.Sharpen(alpha=(0.2, 0.5), lightness=(0.5, 1.0), p=0.2), # 3
             ])
         else:
             transform = A.Compose([
@@ -112,9 +101,8 @@ class PACSDataset(Dataset):
 
     def _preprocess_example(self, example):
         example["image"] = (example["image"] + np.random.random()) / 256.  # dequantization
-        example["image"] = (255 * example["image"])
-        example["image"] = example["image"] / 127.5 - 1.0
         example["image"] = example["image"].astype(np.float32)
+        example["image"] = example["image"] 
 
     def __len__(self):
         return self._length
@@ -166,6 +154,13 @@ class PACSValidation(Dataset):
 
 if __name__ == "__main__":
 
+    class_dict = {
+        0: "photo",
+        1: "art_painting",
+        2: "cartoon",
+        3: "sketch"
+    }
+
     dt = PACSTrain()
     print("size PACSTrain:", len(dt))
     dv = PACSValidation()
@@ -190,17 +185,33 @@ if __name__ == "__main__":
     while True:
         plt.figure(figsize=(12, 6))
         i = np.random.randint(0, len(dt))
-        plt.subplot(1, 2, 1)
+        plt.subplot(2, 2, 1)
         plt.imshow(dt[i]["image"])
         plt.title(dt[i]["fname"])
         plt.xticks([])
         plt.yticks([])
         plt.xlabel("Train Instance")
         j = np.random.randint(0, len(dv))
-        plt.subplot(1, 2, 2)
+        plt.subplot(2, 2, 2)
         plt.imshow(dv[j]["image"])
         plt.title(dv[j]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Test Instance")
+        plt.xlabel("Original Test Instance")
+        plt.subplot(2, 2, 3)
+        ot_path = "data/PACS_train/" + class_dict[dt[i]["class"]] + "/" + dt[i]["fname"]
+        ot_img = np.asarray(Image.open(ot_path, "r"))
+        plt.imshow(ot_img)
+        plt.title(dt[i]["fname"])
+        plt.xticks([])
+        plt.yticks([])
+        plt.xlabel("Original Train Instance")
+        plt.subplot(2, 2, 4)
+        ov_path = "data/PACS_test/" + class_dict[dv[j]["class"]] + "/" + dv[j]["fname"]
+        ov_img = np.asarray(Image.open(ov_path, "r"))
+        plt.imshow(ov_img)
+        plt.title(dv[j]["fname"])
+        plt.xticks([])
+        plt.yticks([])
+        plt.xlabel("Original Test Instance")
         plt.show()
