@@ -22,7 +22,7 @@ class ResnetEncoder(nn.Module):
         self.in_channels = in_channels
         norm_layer = ActNorm
         self.z_dim = z_dim
-        self.model = __possible_resnets[type](pretrained=pretrained, norm_layer=norm_layer)
+        self.model = __possible_resnets[type](pretrained=pretrained)
 
         self.image_transform = torchvision.transforms.Compose(
                 [torchvision.transforms.Lambda(self.normscale)]

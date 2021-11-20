@@ -14,8 +14,8 @@ model:
       params:
         in_channels: 3
         in_size: 256
-        # pretrained: true
-        # type: resnet101
+        pretrained: true
+        type: resnet101
         z_dim: 128
 
     decoder_config:
