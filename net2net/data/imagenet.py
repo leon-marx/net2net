@@ -81,10 +81,12 @@ class ImageNetDataset(Dataset):
 
     def _augment_example(self, example, augment):
         # Numbers mean, how good of an idea I think this is. 1 = very good, 5 = maybe catastrophal
-        if example["image"].shape[0] < 256:
-            A.Resize(height=256, width=example["image"].shape[1], interpolation=cv2.cv2.INTER_LINEAR, p=1.0)
+        if example["image"].shape[0] < 256 & example["image"].shape[1] < 256:
+            example["image"] = A.Resize(height=256, width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(example["image"])
+        elif example["image"].shape[0] < 256:
+            example["image"] = A.Resize(height=256, width=example["image"].shape[1], interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(example["image"])
         elif example["image"].shape[1] < 256:
-            A.Resize(height=example["image"].shape[0], width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)
+            example["image"] = A.Resize(height=example["image"].shape[0], width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(example["image"])
         if augment:
             transform = A.Compose([
                 A.RandomCrop(height=256, width=256, p=1.0), # 1
@@ -185,14 +187,16 @@ if __name__ == "__main__":
         plt.title(dt[i]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Train Instance")
+        plt.xlabel(f"{np.round(dt[i]['image'].max(), 2)}, {np.round(dt[i]['image'].min(), 2)}")
+        plt.ylabel("Dataloader Image")
         j = np.random.randint(0, len(dv))
         plt.subplot(2, 2, 2)
         plt.imshow(dv[j]["image"])
         plt.title(dv[j]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Original Test Instance")
+        plt.xlabel(f"{np.round(dv[j]['image'].max(), 2)}, {np.round(dv[j]['image'].min(), 2)}")
+        plt.ylabel("Dataloader Image")
         plt.subplot(2, 2, 3)
         ot_path = "data/imagenet_train/" + class_dict[dt[i]["class"]] + "/" + dt[i]["fname"]
         ot_img = np.asarray(Image.open(ot_path, "r"))
@@ -200,7 +204,8 @@ if __name__ == "__main__":
         plt.title(dt[i]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Original Train Instance")
+        plt.xlabel(f"{ot_img.max()}, {ot_img.min()}")
+        plt.ylabel("Original Image")
         plt.subplot(2, 2, 4)
         ov_path = "data/imagenet_test/" + class_dict[dv[j]["class"]] + "/" + dv[j]["fname"]
         ov_img = np.asarray(Image.open(ov_path, "r"))
@@ -208,5 +213,6 @@ if __name__ == "__main__":
         plt.title(dv[j]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Original Test Instance")
+        plt.xlabel(f"{ov_img.max()}, {ov_img.min()}")
+        plt.ylabel("Original Image")
         plt.show()
