@@ -132,9 +132,6 @@ dmypy.json
 .vs
 .vscode
 
-# Data directory
-data/
-
 # pycache
 __pycache__/
 *.pyc

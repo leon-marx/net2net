@@ -1,4 +1,4 @@
-name: leon-temp
+name: leon-net2net
 channels:
   - pytorch
   - defaults
