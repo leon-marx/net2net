@@ -101,6 +101,8 @@ class PACSDataset(Dataset):
 
     def _preprocess_example(self, example):
         example["image"] = (example["image"] + np.random.random()) / 256.  # dequantization
+        example["image"] = (255 * example["image"])
+        example["image"] = example["image"] / 127.5 - 1.0
         example["image"] = example["image"].astype(np.float32)
 
     def __len__(self):
