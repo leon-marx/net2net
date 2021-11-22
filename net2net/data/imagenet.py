@@ -81,7 +81,7 @@ class ImageNetDataset(Dataset):
 
     def _augment_example(self, example, augment):
         # Numbers mean, how good of an idea I think this is. 1 = very good, 5 = maybe catastrophal
-        if example["image"].shape[0] < 256 & example["image"].shape[1] < 256:
+        if (example["image"].shape[0] < 256 and example["image"].shape[1] < 256):
             transformed = A.Resize(height=256, width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(image=example["image"])
             example["image"] = transformed["image"]
         elif example["image"].shape[0] < 256:
@@ -185,6 +185,8 @@ if __name__ == "__main__":
     while True:
         plt.figure(figsize=(12, 6))
         i = np.random.randint(0, len(dt))
+        i = 2944
+        print(i)
         plt.subplot(2, 2, 1)
         plt.imshow(dt[i]["image"])
         plt.title(dt[i]["fname"])
@@ -193,6 +195,7 @@ if __name__ == "__main__":
         plt.xlabel(f"{np.round(dt[i]['image'].max(), 2)}, {np.round(dt[i]['image'].min(), 2)}")
         plt.ylabel("Dataloader Image")
         j = np.random.randint(0, len(dv))
+        j = 3
         plt.subplot(2, 2, 2)
         plt.imshow(dv[j]["image"])
         plt.title(dv[j]["fname"])
@@ -218,4 +221,5 @@ if __name__ == "__main__":
         plt.yticks([])
         plt.xlabel(f"{ov_img.max()}, {ov_img.min()}")
         plt.ylabel("Original Image")
-        plt.show()
+        plt.close()
+        # plt.show()
