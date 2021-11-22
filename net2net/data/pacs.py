@@ -102,7 +102,6 @@ class PACSDataset(Dataset):
     def _preprocess_example(self, example):
         example["image"] = (example["image"] + np.random.random()) / 256.  # dequantization
         example["image"] = example["image"].astype(np.float32)
-        example["image"] = example["image"] 
 
     def __len__(self):
         return self._length
@@ -190,14 +189,16 @@ if __name__ == "__main__":
         plt.title(dt[i]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Train Instance")
+        plt.xlabel(f"{np.round(dt[i]['image'].max(), 2)}, {np.round(dt[i]['image'].min(), 2)}")
+        plt.ylabel("Dataloader Image")
         j = np.random.randint(0, len(dv))
         plt.subplot(2, 2, 2)
         plt.imshow(dv[j]["image"])
         plt.title(dv[j]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Original Test Instance")
+        plt.xlabel(f"{np.round(dv[j]['image'].max(), 2)}, {np.round(dv[j]['image'].min(), 2)}")
+        plt.ylabel("Dataloader Image")
         plt.subplot(2, 2, 3)
         ot_path = "data/PACS_train/" + class_dict[dt[i]["class"]] + "/" + dt[i]["fname"]
         ot_img = np.asarray(Image.open(ot_path, "r"))
@@ -205,7 +206,8 @@ if __name__ == "__main__":
         plt.title(dt[i]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Original Train Instance")
+        plt.xlabel(f"{ot_img.max()}, {ot_img.min()}")
+        plt.ylabel("Original Image")
         plt.subplot(2, 2, 4)
         ov_path = "data/PACS_test/" + class_dict[dv[j]["class"]] + "/" + dv[j]["fname"]
         ov_img = np.asarray(Image.open(ov_path, "r"))
@@ -213,5 +215,6 @@ if __name__ == "__main__":
         plt.title(dv[j]["fname"])
         plt.xticks([])
         plt.yticks([])
-        plt.xlabel("Original Test Instance")
+        plt.xlabel(f"{ov_img.max()}, {ov_img.min()}")
+        plt.ylabel("Original Image")
         plt.show()
