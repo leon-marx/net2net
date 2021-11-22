@@ -82,11 +82,14 @@ class ImageNetDataset(Dataset):
     def _augment_example(self, example, augment):
         # Numbers mean, how good of an idea I think this is. 1 = very good, 5 = maybe catastrophal
         if example["image"].shape[0] < 256 & example["image"].shape[1] < 256:
-            example["image"] = A.Resize(height=256, width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(image=example["image"])
+            transformed = A.Resize(height=256, width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(image=example["image"])
+            example["image"] = transformed["image"]
         elif example["image"].shape[0] < 256:
-            example["image"] = A.Resize(height=256, width=example["image"].shape[1], interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(image=example["image"])
+            transformed = A.Resize(height=256, width=example["image"].shape[1], interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(image=example["image"])
+            example["image"] = transformed["image"]
         elif example["image"].shape[1] < 256:
-            example["image"] = A.Resize(height=example["image"].shape[0], width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(image=example["image"])
+            transformed = A.Resize(height=example["image"].shape[0], width=256, interpolation=cv2.cv2.INTER_LINEAR, p=1.0)(image=example["image"])
+            example["image"] = transformed["image"]
         if augment:
             transform = A.Compose([
                 A.RandomCrop(height=256, width=256, p=1.0), # 1
