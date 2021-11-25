@@ -14,9 +14,9 @@ class ImageNetDataset(Dataset):
     def __init__(self, domain, contents, train, augment):
         super(ImageNetDataset, self).__init__()
         if os.name == "nt":
-            self.repo_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
+            self.base_path = f"C:/Users/gooog/Desktop/Bachelor/Code/bachelor/"
         else:
-            self.repo_path = f"/home/tarkus/leon/bachelor/"
+            self.base_path = f"/home/../hd-data/imagenet/"
         if domain != "photo":
             print("WARNING: domain must be photo for Image-Net!")
         self.domain = domain
@@ -28,13 +28,13 @@ class ImageNetDataset(Dataset):
         self._load()
 
     def _prepare(self):
-        self.root = self.repo_path + f"data/{self.imagenet_dir}/{self.domain}/"
+        self.root = self.base_path + f"data/{self.imagenet_dir}/{self.domain}/"
         for content in self.contents:
             if not ndu.is_prepared(self.root + f"{content}/"):
                 print(f"preparing {self.domain} {content} dataset...")
                 # prep
                 ndu.mark_prepared(self.root + f"{content}/")
-        self._data_path = self.repo_path + f"data/{self.imagenet_dir}/meta/{self.domain}.txt"
+        self._data_path = self.base_path + f"data/{self.imagenet_dir}/meta/{self.domain}.txt"
 
     def _load(self):
         self._data = np.loadtxt(self._data_path, dtype=str)
