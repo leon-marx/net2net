@@ -2,7 +2,7 @@ model:
   base_learning_rate: 4.5e-6
   target: net2net.models.autoencoder.BigAE
   params:
-    ckpt_path: "logs/2021-11-23T15-17-18_z_512_continued_2/checkpoints/epoch=000053.ckpt"
+    ckpt_path: "logs/2021-11-25T21-11-49_imagenet_big/checkpoints/epoch=000008.ckpt"
     loss_config:
       target: net2net.modules.autoencoder.loss.LPIPSWithDiscriminator
       params:
