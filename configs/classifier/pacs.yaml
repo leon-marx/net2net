@@ -1,14 +1,11 @@
 model:
   base_learning_rate: 4.5e-6
-  target: net2net.models.autoencoder.BigAE
+  target: net2net.models.classifier.Classifier
   params:
-    ckpt_path: "logs/2021-11-29T21-24-15_512_pretrained/checkpoints/epoch=000094.ckpt"
     loss_config:
-      target: net2net.modules.autoencoder.loss.LPIPSWithDiscriminator
+      target: net2net.modules.classifier.loss.ClassifierLoss
       params:
-        disc_start: 75001
-        kl_weight: 0.000001
-        disc_weight: 0.5
+        disc_start: 75001  # change
 
     encoder_config:
       target: net2net.modules.autoencoder.encoder.ResnetEncoder
@@ -17,12 +14,12 @@ model:
         in_size: 256
         pretrained: false
         type: resnet101
-        z_dim: 512
+        z_dim: 128
 
     decoder_config:
       target: net2net.modules.autoencoder.decoder.BigGANDecoderWrapper
       params:
-        z_dim: 512
+        z_dim: 128
         in_size: 256
         use_actnorm_in_dec: true
 
@@ -30,8 +27,8 @@ model:
 data:
   target: translation.DataModuleFromConfig
   params:
-    batch_size: 3
+    batch_size: 15
     train:
-      target: net2net.data.pacs.PACSTrain
+      target: net2net.data.pacsgen.PACSGeneratedTrain
     validation:
-      target: net2net.data.pacs.PACSValidation
+      target: net2net.data.pacsgen.PACSGeneratedValidation
