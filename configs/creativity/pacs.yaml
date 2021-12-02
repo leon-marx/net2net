@@ -26,7 +26,7 @@ model:
     first_stage_config:
       target: net2net.models.autoencoder.BigAE
       params:
-        ckpt_path: "logs/2020-09-16T16-23-39_INSERT_NAME_HERE/checkpoints/last.ckpt"
+        ckpt_path: "logs/INSERT_LOG_NAME_HERE/checkpoints/last.ckpt"
         encoder_config:
           target: net2net.modules.autoencoder.encoder.ResnetEncoder
           params:
