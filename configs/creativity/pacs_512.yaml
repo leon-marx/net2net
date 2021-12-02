@@ -49,7 +49,7 @@ model:
 data:
   target: translation.DataModuleFromConfig
   params:
-    batch_size: 15
+    batch_size: 3
     train:
       target: net2net.data.pacs.PACSTrain
     validation:
