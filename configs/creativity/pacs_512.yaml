@@ -2,7 +2,6 @@ model:
   base_learning_rate: 4.5e-6
   target: net2net.models.flows.flow.Net2NetFlow
   params:
-    ckpt_path: "logs/2021-12-02T10-29-46_512_net2net/checkpoints/epoch=000116.ckpt"
     first_stage_key: "image"
     cond_stage_key: "class"
     flow_config:
@@ -27,7 +26,7 @@ model:
     first_stage_config:
       target: net2net.models.autoencoder.BigAE
       params:
-        ckpt_path: "logs/2021-11-30T22-23-36_512_pretrained_continue/checkpoints/last.ckpt"
+        ckpt_path: "logs/2021-11-30T22-23-36_512_pretrained_continue/checkpoints/000083.ckpt"
         encoder_config:
           target: net2net.modules.autoencoder.encoder.ResnetEncoder
           params:
