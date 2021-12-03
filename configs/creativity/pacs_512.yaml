@@ -7,7 +7,6 @@ model:
     flow_config:
       target: net2net.modules.flow.flatflow.ConditionalFlatCouplingFlow
       params:
-        ckpt_path: "logs/2021-12-02T10-29-46_512_net2net/checkpoints/epoch=000116.ckpt"
         conditioning_dim: 4
         embedding_dim: 10
         conditioning_depth: 2
