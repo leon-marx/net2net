@@ -418,11 +418,14 @@ def load_model_and_dset(config, ckpt, gpu, eval_mode):
 if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
+    """
     mode = st.sidebar.selectbox("Model Edition", ["CelebA - CelebaHQ - FFHQ",
                                                   "Anime - Photography",
                                                   "Portrait - Photography",
                                                   "PACS",
     ])
+    """
+    mode = st.sidebar.selectbox("Model Edition", ["PACS",])
 
     if mode == "CelebA - CelebaHQ - FFHQ":
         path = os.path.join(CKPT_ROOT, "2020-11-30T23-32-28_celeba_celebahq_ffhq_256")
@@ -438,14 +441,16 @@ if __name__ == "__main__":
         ckpt = os.path.join(CKPT_ROOT, "2020-12-02T16-19-39_portraits_photography_256/checkpoints/epoch=000003.ckpt")
         label_dict = {0: "Photography", 1: "Oil Portrait"}
     elif mode == "PACS":
-        path = os.path.join(CKPT_ROOT, "2021-12-03T18-07-45_512_net2net_2")
-        ckpt = os.path.join(CKPT_ROOT, "2021-12-03T18-07-45_512_net2net_2/checkpoints/epoch=000958.ckpt")
+        path = os.path.join("logs/2021-12-03T18-07-45_512_net2net_2")
+        ckpt = os.path.join("logs/2021-12-03T18-07-45_512_net2net_2/checkpoints/epoch=000958.ckpt")
         label_dict = {0: "photo", 1: "art_painting", 2: "cartoon", 3: "sketch"}
     else:
         raise ValueError("Unknown mode {}".format(mode))
 
     logdir = path.rstrip("/")
     base_configs = sorted(glob.glob(os.path.join(logdir, "configs/*-project.yaml")))
+    # config_path = "C:/users/gooog/desktop/bachelor/code/bachelor/" + path + "/configs/*-project.yaml"
+    # base_configs = sorted(glob.glob(os.path.join(config_path)))
 
     configs = [OmegaConf.load(cfg) for cfg in base_configs]
     config = OmegaConf.merge(*configs)
