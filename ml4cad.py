@@ -421,6 +421,7 @@ if __name__ == "__main__":
     mode = st.sidebar.selectbox("Model Edition", ["CelebA - CelebaHQ - FFHQ",
                                                   "Anime - Photography",
                                                   "Portrait - Photography",
+                                                  "PACS",
     ])
 
     if mode == "CelebA - CelebaHQ - FFHQ":
@@ -436,6 +437,10 @@ if __name__ == "__main__":
         path = os.path.join(CKPT_ROOT, "2020-12-02T16-19-39_portraits_photography_256")
         ckpt = os.path.join(CKPT_ROOT, "2020-12-02T16-19-39_portraits_photography_256/checkpoints/epoch=000003.ckpt")
         label_dict = {0: "Photography", 1: "Oil Portrait"}
+    elif mode == "PACS":
+        path = os.path.join(CKPT_ROOT, "2021-12-03T18-07-45_512_net2net_2")
+        ckpt = os.path.join(CKPT_ROOT, "2021-12-03T18-07-45_512_net2net_2/checkpoints/epoch=000958.ckpt")
+        label_dict = {0: "photo", 1: "art_painting", 2: "cartoon", 3: "sketch"}
     else:
         raise ValueError("Unknown mode {}".format(mode))
 
