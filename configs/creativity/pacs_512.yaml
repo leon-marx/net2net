@@ -2,7 +2,7 @@ model:
   base_learning_rate: 4.5e-6
   target: net2net.models.flows.flow.Net2NetFlow
   params:
-    ckpt_path: "logs/2021-12-02T10-29-46_512_net2net/checkpoints/epoch=000116.ckpt"
+    ckpt_path: "logs/2021-12-03T18-07-45_512_net2net_2/checkpoints/epoch=000958.ckpt"
     first_stage_key: "image"
     cond_stage_key: "class"
     flow_config:

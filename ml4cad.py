@@ -220,7 +220,7 @@ def give_other_labels(label, label_dict):
 
 @torch.no_grad()
 def sample_all_labels(model, num_samples, label_dict):
-    zz_sample = torch.randn(num_samples, 128, 1, 1).to(model.device)
+    zz_sample = torch.randn(num_samples, 512, 1, 1).to(model.device)
     decoded_samples = list()
     for label in label_dict:
         cond = torch.LongTensor([label])
