@@ -1,5 +1,5 @@
 import os
-from pl_bolts.models.autoencoders.basic_ae.basic_ae_module import AE
+from net2net.modules.classifier.autoencoder import AE
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
