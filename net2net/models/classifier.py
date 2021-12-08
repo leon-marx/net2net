@@ -55,6 +55,14 @@ class Classifier(pl.LightningModule):
         loss = self.loss(predictions, labels)
         return loss
 
+    def validation_step(self, batch, batch_idx):
+        inputs = batch["image"].permute(0, 3, 1, 2)
+        labels = batch["content"]
+        predictions = self(inputs)
+        loss = self.loss(predictions, labels)
+        output = pl.EvalResult(checkpoint_on=loss)
+        return output
+
     def configure_optimizers(self):
         lr = self.learning_rate
         opt = torch.optim.Adam(list(self.ae.parameters())+list(self.linear.parameters()),
