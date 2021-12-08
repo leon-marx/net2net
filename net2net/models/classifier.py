@@ -11,11 +11,14 @@ class Classifier(pl.LightningModule):
         self.repo_path = self.get_repo_path()
         self.ae = AE(input_height=input_height, latent_dim=latent_dim).load_from_checkpoint(self.repo_path + "logs/downloaded/cifar10_resnet18_epoch=96.ckpt")
         self.linear = nn.Linear(self.ae.latent_dim, 7)
-        self.loss = nn.CrossEntropyLoss
 
         if ckpt_path is not None:
             print(f"Loading model from {ckpt_path}")
             self.init_from_ckpt(ckpt_path)
+
+    def loss(self, predictions, labels):
+        labels = torch.argmax(labels, dim=1)
+        return nn.CrossEntropyLoss(predictions, labels)
 
     def get_repo_path(self):
         if os.name == "nt":
