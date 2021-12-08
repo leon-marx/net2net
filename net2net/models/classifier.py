@@ -42,7 +42,7 @@ class Classifier(pl.LightningModule):
             print(f"Unexpected keys in state dict: {unexpected}")
 
     def forward(self, x):
-        feats = self.ae.encoder(torch.Tensor(x["image"]).view(1, 256, 256, 3).permute(0, 3, 1, 2))
+        feats = self.ae.encoder(torch.Tensor(x).view(1, 256, 256, 3).permute(0, 3, 1, 2))
         z = self.ae.fc(feats)
         pred = self.linear(z)
         return pred
