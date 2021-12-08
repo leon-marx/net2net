@@ -11,14 +11,15 @@ class Classifier(pl.LightningModule):
         self.repo_path = self.get_repo_path()
         self.ae = AE(input_height=input_height, latent_dim=latent_dim).load_from_checkpoint(self.repo_path + "logs/downloaded/cifar10_resnet18_epoch=96.ckpt")
         self.linear = nn.Linear(self.ae.latent_dim, 7)
+        self.loss = nn.CrossEntropyLoss()
 
         if ckpt_path is not None:
             print(f"Loading model from {ckpt_path}")
             self.init_from_ckpt(ckpt_path)
 
-    def loss(self, predictions, labels):
+    def loss_fct(self, predictions, labels):
         labels = torch.argmax(labels, dim=1)
-        return nn.CrossEntropyLoss(predictions, labels)
+        return self.loss(predictions, labels)
 
     def get_repo_path(self):
         if os.name == "nt":
@@ -54,14 +55,14 @@ class Classifier(pl.LightningModule):
         inputs = batch["image"].permute(0, 3, 1, 2)
         labels = batch["content"]
         predictions = self(inputs)
-        loss = self.loss(predictions, labels)
+        loss = self.loss_fct(predictions, labels)
         return loss
 
     def validation_step(self, batch, batch_idx):
         inputs = batch["image"].permute(0, 3, 1, 2)
         labels = batch["content"]
         predictions = self(inputs)
-        loss = self.loss(predictions, labels)
+        loss = self.loss_fct(predictions, labels)
         output = pl.EvalResult(checkpoint_on=loss)
         return output
 
