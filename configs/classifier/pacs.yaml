@@ -10,6 +10,6 @@ data:
   params:
     batch_size: 15
     train:
-      target: net2net.data.pacsgen.PACSGeneratedTrain
+      target: net2net.data.pacs.PACSTrain
     validation:
-      target: net2net.data.pacsgen.PACSGeneratedValidation
+      target: net2net.data.pacs.PACSValidation

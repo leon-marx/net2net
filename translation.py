@@ -450,11 +450,13 @@ if __name__ == "__main__":
         default_modelckpt_cfg = {
             "target": "pytorch_lightning.callbacks.ModelCheckpoint",
             "params": {
-                "filepath": os.path.join(ckptdir, "{epoch:06}"),
+                "dirpath": ckptdir + "/",
+                "filename": "{epoch:06}",
                 "verbose": True,
                 "save_last": True,
                 "save_top_k": 3,
-                "period": 0,
+                "every_n_epochs": 1,
+                "monitor": "val_loss",
             }
         }
         modelckpt_cfg = lightning_config.modelcheckpoint or OmegaConf.create()
