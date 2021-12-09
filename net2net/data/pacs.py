@@ -114,13 +114,15 @@ class PACSTrain(Dataset):
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
-    def __init__(self):
+    def __init__(self, domains, contents):
+        """
+        domains = [photo", "art_painting", "cartoon", "sketch"]
         contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSDataset(domain="photo", contents=contents, train=True, augment=True)
-        d2 = PACSDataset(domain="art_painting", contents=contents, train=True, augment=True)
-        d3 = PACSDataset(domain="cartoon", contents=contents, train=True, augment=True)
-        d4 = PACSDataset(domain="sketch", contents=contents, train=True, augment=True)
-        self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
+        """
+        d_list = []
+        for domain in domains:
+            d_list.append(PACSDataset(domain=domain), contents=contents, train=True, augment=True)
+        self.data = ConcatDatasetWithIndex(d_list)
 
     def __len__(self):
         return len(self.data)
@@ -136,13 +138,15 @@ class PACSValidation(Dataset):
     domain: photo, art_painting, cartoon, sketch
     content: dog, elephant, giraffe, guitar, horse, house, person
     """
-    def __init__(self):
+    def __init__(self, domains, contents):
+        """
+        domains = [photo", "art_painting", "cartoon", "sketch"]
         contents = ["dog", "elephant", "giraffe", "guitar", "horse", "house", "person"]
-        d1 = PACSDataset(domain="photo", contents=contents, train=False, augment=False)
-        d2 = PACSDataset(domain="art_painting", contents=contents, train=False, augment=False)
-        d3 = PACSDataset(domain="cartoon", contents=contents, train=False, augment=False)
-        d4 = PACSDataset(domain="sketch", contents=contents, train=False, augment=False)
-        self.data = ConcatDatasetWithIndex([d1, d2, d3, d4])
+        """
+        d_list = []
+        for domain in domains:
+            d_list.append(PACSDataset(domain=domain), contents=contents, train=False, augment=False)
+        self.data = ConcatDatasetWithIndex(d_list)
 
     def __len__(self):
         return len(self.data)

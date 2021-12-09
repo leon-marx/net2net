@@ -452,8 +452,8 @@ if __name__ == "__main__":
             "params": {
                 "filepath": os.path.join(ckptdir, "{epoch:06}"),
                 "verbose": True,
-                "save_last": True,
-                "save_top_k": 3,
+                "save_last": False,
+                "save_top_k": 1,
                 "period": 0,
             }
         }
