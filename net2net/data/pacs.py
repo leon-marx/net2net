@@ -121,7 +121,7 @@ class PACSTrain(Dataset):
         """
         d_list = []
         for domain in domains:
-            d_list.append(PACSDataset(domain=domain), contents=contents, train=True, augment=True)
+            d_list.append(PACSDataset(domain=domain, contents=contents, train=True, augment=True))
         self.data = ConcatDatasetWithIndex(d_list)
 
     def __len__(self):
@@ -145,7 +145,7 @@ class PACSValidation(Dataset):
         """
         d_list = []
         for domain in domains:
-            d_list.append(PACSDataset(domain=domain), contents=contents, train=False, augment=False)
+            d_list.append(PACSDataset(domain=domain, contents=contents, train=False, augment=False))
         self.data = ConcatDatasetWithIndex(d_list)
 
     def __len__(self):
@@ -158,6 +158,7 @@ class PACSValidation(Dataset):
 
 
 if __name__ == "__main__":
+    print("This function is deprecated! DO NOT USE!")
 
     class_dict = {
         0: "photo",

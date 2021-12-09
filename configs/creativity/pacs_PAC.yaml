@@ -2,13 +2,12 @@ model:
   base_learning_rate: 4.5e-6
   target: net2net.models.flows.flow.Net2NetFlow
   params:
-    ckpt_path: "logs/2021-12-03T18-07-45_512_net2net_2/checkpoints/epoch=000958.ckpt"
     first_stage_key: "image"
     cond_stage_key: "class"
     flow_config:
       target: net2net.modules.flow.flatflow.ConditionalFlatCouplingFlow
       params:
-        conditioning_dim: 4
+        conditioning_dim: 3
         embedding_dim: 10
         conditioning_depth: 2
         n_flows: 20
@@ -21,13 +20,13 @@ model:
     cond_stage_config:
       target: net2net.modules.labels.model.Labelator
       params:
-        num_classes: 4
+        num_classes: 3
         as_one_hot: True
 
     first_stage_config:
       target: net2net.models.autoencoder.BigAE
       params:
-        ckpt_path: "logs/2021-11-30T22-23-36_512_pretrained_continue/checkpoints/epoch=000083.ckpt"
+        ckpt_path: "logs/*DG_AE_PAC/checkpoints/*.ckpt"
         encoder_config:
           target: net2net.modules.autoencoder.encoder.ResnetEncoder
           params:
@@ -53,5 +52,31 @@ data:
     batch_size: 8
     train:
       target: net2net.data.pacs.PACSTrain
+      params:
+        domains:
+          - "photo"
+          - "art_painting"
+          - "cartoon"
+        contents:
+          - "dog"
+          - "elephant"
+          - "giraffe"
+          - "guitar"
+          - "horse"
+          - "house"
+          - "person"
     validation:
       target: net2net.data.pacs.PACSValidation
+      params:
+        domains:
+          - "photo"
+          - "art_painting"
+          - "cartoon"
+        contents:
+          - "dog"
+          - "elephant"
+          - "giraffe"
+          - "guitar"
+          - "horse"
+          - "house"
+          - "person"

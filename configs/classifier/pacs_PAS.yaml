@@ -1,36 +1,14 @@
 model:
   base_learning_rate: 4.5e-6
-  target: net2net.models.autoencoder.BigAE
+  target: net2net.models.classifier.Classifier
   params:
-    ckpt_path: "logs/*DG_imagenet_pretraining/checkpoints/*.ckpt"
-    loss_config:
-      target: net2net.modules.autoencoder.loss.LPIPSWithDiscriminator
-      params:
-        disc_start: 75001
-        kl_weight: 0.000001
-        disc_weight: 0.5
-
-    encoder_config:
-      target: net2net.modules.autoencoder.encoder.ResnetEncoder
-      params:
-        in_channels: 3
-        in_size: 256
-        pretrained: false
-        type: resnet101
-        z_dim: 512
-
-    decoder_config:
-      target: net2net.modules.autoencoder.decoder.BigGANDecoderWrapper
-      params:
-        z_dim: 512
-        in_size: 256
-        use_actnorm_in_dec: true
-
+    input_height: 256
+    latent_dim: 256
 
 data:
   target: translation.DataModuleFromConfig
   params:
-    batch_size: 3
+    batch_size: 15
     train:
       target: net2net.data.pacs.PACSTrain
       params:
