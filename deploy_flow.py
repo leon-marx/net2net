@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from net2net.models.flows.flow import Net2NetFlow
 from net2net.data.pacs import PACSTrain, PACSValidation
 import torch
+from torch.utils.data import DataLoader
 
 
 def get_model():
@@ -29,7 +30,7 @@ def get_model():
     first_stage_config = {
         "target": "net2net.models.autoencoder.BigAE",
         "params": {
-            "ckpt_path": "../logs/2021-11-30T22-23-36_512_pretrained_continue/checkpoints/epoch=000083.ckpt",
+            "ckpt_path": "logs/2021-11-30T22-23-36_512_pretrained_continue/checkpoints/epoch=000083.ckpt",
             "encoder_config": {
                 "target": "net2net.modules.autoencoder.encoder.ResnetEncoder",
                 "params": {
@@ -53,7 +54,7 @@ def get_model():
             }
         }
     }
-    ckpt_path = "../logs/2021-12-02T10-29-46_512_net2net/checkpoints/epoch=000116.ckpt"
+    ckpt_path = "logs/2021-12-07T23-57-27_512_net2net_3/checkpoints/epoch=000526.ckpt"
     N = Net2NetFlow(flow_config=flow_config,
                         first_stage_config=first_stage_config,
                         cond_stage_config=cond_stage_config,
@@ -63,7 +64,7 @@ def get_model():
     N.eval()
     return N
 
-def get_dset():
+def get_dset(mode="val"):
     data_config = {
         "data": {
             "target": "translation.DataModuleFromConfig",
@@ -78,7 +79,12 @@ def get_dset():
             }
         }
     }
-    D = PACSValidation()
+    if mode == "val":
+        D = PACSValidation()
+    elif mode == "train":
+        D = PACSTrain()
+    else:
+        print("mode not supported. Choose between 'train' and 'val'.")
     return D
 
 def get_images(dset, size):
@@ -133,7 +139,7 @@ def make_plot(model, images, save_to=None):
     else:
         plt.savefig(save_to)
 
-def main(iterations=1):
+def make_overview(iterations=1):
     m = get_model()
     d = get_dset()
     for i in range(iterations):
@@ -141,7 +147,14 @@ def main(iterations=1):
         images = get_images(d, 5)
         make_plot(m, images, save_to=f"/home/tarkus/leon/bachelor/logs/generated_net2net_2/img_{i}.jpg")
 
+def generate_data():
+    model = get_model()
+    dset = get_dset(mode="train")
+    dataloader = DataLoader(dset, batch_size=16, shuffle=False)
+    for batch in dataloader:
+        translations = translation(model=model, image=batch)
 
 # Execution
 if __name__ == "__main__":
-    main(50)
+    # make_overview(50)
+    generate_data()
